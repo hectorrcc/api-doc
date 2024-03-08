@@ -1,16 +1,20 @@
 import express, { json } from "express";
 import cors from "cors";
-import connectDB from "./config/postgresDB";
+import cookieParser from "cookie-parser";
+
 import "dotenv/config";
+import { UserRouter, AuthRouter, FileRouter } from "./routes";
+
+export const app = express();
 
 
-const app = express();
-const port = process.env.PORT;
-
+app.disable("x-powered-by");
 app.use(json());
 app.use(cors());
+app.use(cookieParser());
 
-app.listen(port, () => {
-  console.log(`Server start in de port ${port}`);
-  connectDB();
-});
+app.use("/api/users", UserRouter);
+app.use("/api/auth", AuthRouter);
+app.use("/api/files", FileRouter);
+
+

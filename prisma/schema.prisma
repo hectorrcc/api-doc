@@ -1,0 +1,58 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          Int           @id @default(autoincrement())
+  name        String
+  email       String        @unique
+  password    String
+  role        Role          @default(GUEST)
+  createdAt   DateTime      @default(now())
+  files       File[]
+  permissions Permissions[]
+}
+
+model File {
+  id          Int           @id @default(autoincrement())
+  name        String
+  type        Type
+  userId      Int
+  parentId    Int?
+  createdAt   DateTime      @default(now())
+  isRoot      Boolean       @default(false)
+  parent      File?         @relation("DirectoryFile", fields: [parentId], references: [id], onDelete: Cascade)
+  children    File[]        @relation("DirectoryFile")
+  creator     User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  permissions Permissions[]
+}
+
+model Permissions {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  fileId    Int
+  createdAt DateTime @default(now())
+  read      Boolean
+  write     Boolean
+  delete    Boolean
+  share     Boolean
+  file      File     @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+enum Role {
+  ADMIN
+  CREATOR
+  GUEST
+}
+
+enum Type {
+  FILE
+  DIRECTORY
+}
